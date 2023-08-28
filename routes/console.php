@@ -22,6 +22,7 @@ Artisan::command('inspire', function () {
 Artisan::command('test', function () {
 
     $accessTokenService = new \App\Service\WechatWork\Src\AddressBookService();
-    $accessToken = $accessTokenService->getUserIdList();
+    $res = $accessTokenService->getUserIdList();
+    dd($res);
 
 });

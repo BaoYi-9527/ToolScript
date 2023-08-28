@@ -4,6 +4,7 @@
 namespace App\Service\WechatWork\Src;
 
 
+use App\Service\WechatWork\Config\Wechat;
 use App\Service\WechatWork\WechatWorkException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -41,19 +42,26 @@ class BaseService
      * GET 请求
      * @param $uri
      * @param array $query
+     * @param int $retry
      * @return mixed
      * @throws GuzzleException
      * @throws WechatWorkException
      */
-    public function httpGet($uri, array $query = []): mixed
+    public function httpGet($uri, array $query = [], int $retry = Wechat::DEFAULT_RETRY_TIMES): mixed
     {
         $response = $this->client->request('GET', $uri, [
             'query' => $query
         ]);
 
         $response = json_decode($response->getBody()->getContents(), true);
-        if (isset($response['errcode']) && $response['errcode'] != 0) {
-            throw new WechatWorkException($response['errmsg'] ?? "{$uri} request failed", $response['errcode']);
+        if (isset($response['errcode']) && $response['errcode'] != Wechat::SUCCESS) {
+            # invalid access_token
+            if ($response['errcode'] == Wechat::INVALID_ACCESS_TOKEN && $retry >= 0) {
+                $this->requestAccessToken(false);
+                return $this->httpGet($uri, $query, $retry - 1);
+            } else {
+                throw new WechatWorkException($response['errmsg'] ?? "{$uri} request failed", $response['errcode']);
+            }
         }
 
         return $response;
@@ -63,19 +71,26 @@ class BaseService
      * POST 请求
      * @param $uri
      * @param array $json
+     * @param int $retry
      * @return mixed
      * @throws GuzzleException
      * @throws WechatWorkException
      */
-    public function httpPost($uri, array $json = []): mixed
+    public function httpPost($uri, array $json = [], int $retry = Wechat::DEFAULT_RETRY_TIMES): mixed
     {
         $response = $this->client->request('POST', $uri, [
             'json' => $json
         ]);
 
         $response = json_decode($response->getBody()->getContents(), true);
-        if (isset($response['errcode']) && $response['errcode'] != 0) {
-            throw new WechatWorkException($response['errmsg'] ?? "{$uri} request failed", $response['errcode']);
+        if (isset($response['errcode']) && $response['errcode'] != Wechat::SUCCESS) {
+            # invalid access_token
+            if ($response['errcode'] == Wechat::INVALID_ACCESS_TOKEN && $retry >= 0) {
+                $this->requestAccessToken(false);
+                return $this->httpPost($uri, $json, $retry - 1);
+            } else {
+                throw new WechatWorkException($response['errmsg'] ?? "{$uri} request failed", $response['errcode']);
+            }
         }
 
         return $response;
