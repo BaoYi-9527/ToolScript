@@ -21,8 +21,13 @@ Artisan::command('inspire', function () {
 # php artisan test
 Artisan::command('test', function () {
 
+    $appMsgPushService = new \App\Service\WechatWork\Src\AppMsgPushService();
+    $res = $appMsgPushService->textMsgSend('hello world!', ['XXX']);
+    dd($res);
+
     $accessTokenService = new \App\Service\WechatWork\Src\AddressBookService();
-    $res = $accessTokenService->getUserIdList();
+//    $res = $accessTokenService->getUserListId();    # ZhangWeiCheng
+    $res = $accessTokenService->getUserInfo('XXX');
     dd($res);
 
 });
