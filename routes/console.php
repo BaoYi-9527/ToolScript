@@ -17,3 +17,17 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+# php artisan test
+Artisan::command('test', function () {
+
+    $appMsgPushService = new \App\Service\WechatWork\Src\AppMsgPushService();
+    $res = $appMsgPushService->textMsgSend('hello world!', ['XXX']);
+    dd($res);
+
+    $accessTokenService = new \App\Service\WechatWork\Src\AddressBookService();
+//    $res = $accessTokenService->getUserListId();    # ZhangWeiCheng
+    $res = $accessTokenService->getUserInfo('XXX');
+    dd($res);
+
+});
